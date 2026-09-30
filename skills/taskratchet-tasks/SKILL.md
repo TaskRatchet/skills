@@ -17,7 +17,7 @@ TaskRatchet can be reached two ways. Pick one at the start of a conversation, in
 
 If the user explicitly asks to set up or switch to MCP, do that even if an API key is already configured. If they explicitly ask to use their API key instead of MCP, honor that too.
 
-If an MCP call fails with `insufficient scope`, the user approved narrower permissions than this action needs. Don't switch to the API key on your own to get around that — tell them which permission is missing and let them either re-authorize the connection or explicitly choose the API key. If you do change paths partway through an action, re-confirm it under the new path's rules.
+A working `list_tasks` only proves read access. Some clients expose only read tools, and the user may have approved narrower permissions than an action needs. If a tool an action requires (`complete_task`, a `preview_*` tool, or `confirm_action`) isn't available, or an MCP call fails with `insufficient scope`, don't switch to the API key on your own to get around that. Tell the user what's missing, and let them either fix the connection (re-authorize, or enable write access in their client) or explicitly choose the API key. If you do change paths partway through an action, re-confirm it under the new path's rules.
 
 ## Setting up
 
