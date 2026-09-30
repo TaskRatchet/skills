@@ -12,10 +12,12 @@ TaskRatchet (https://taskratchet.com) is a todo list that charges real money whe
 TaskRatchet can be reached two ways. Pick one at the start of a conversation, in this order:
 
 1. **MCP (preferred).** If TaskRatchet MCP tools are available in your current session (tools named like `list_tasks`, `get_task`, `preview_create_task`, `confirm_action` — often namespaced, e.g. `mcp__taskratchet__list_tasks`) and a read call such as `list_tasks` succeeds, use them for everything. See **Using MCP** below.
-2. **REST with an API key.** If MCP tools aren't available, or they fail with an authentication/authorization error, and the `TASKRATCHET_API_KEY` environment variable is set, call the REST API directly. See **Using the REST API** below.
+2. **REST with an API key.** If MCP tools aren't available, or they fail because the connection isn't logged in (no valid token, needs re-authorizing), and the `TASKRATCHET_API_KEY` environment variable is set, call the REST API directly. See **Using the REST API** below.
 3. **Neither.** Don't fail silently and don't pick a path for the user — walk them through **Setting up** below.
 
 If the user explicitly asks to set up or switch to MCP, do that even if an API key is already configured. If they explicitly ask to use their API key instead of MCP, honor that too.
+
+If an MCP call fails with `insufficient scope`, the user approved narrower permissions than this action needs. Don't switch to the API key on your own to get around that — tell them which permission is missing and let them either re-authorize the connection or explicitly choose the API key. If you do change paths partway through an action, re-confirm it under the new path's rules.
 
 ## Setting up
 
@@ -65,7 +67,7 @@ Proceed only after the user says yes to *that specific action*.
 
 How you get that confirmation depends on the path:
 
-- **MCP:** the four actions are preview-gated. Call the matching `preview_*` tool (`preview_create_task`, `preview_edit_task`, `preview_mark_incomplete`, `preview_uncle_task`) without asking first — it changes nothing. Show the user the preview's description of what will happen, ask them to confirm, and call `confirm_action` with the returned `confirmation_token` only after they say yes. The preview *is* the confirmation prompt: don't ask a separate "are you sure?" before previewing. Never call `confirm_action` straight after its preview — wait for the user's yes in between. Tokens are single-use and expire after 5 minutes — if one expires, preview again and re-confirm.
+- **MCP:** the four actions are preview-gated. Call the matching `preview_*` tool (`preview_create_task`, `preview_edit_task`, `preview_mark_incomplete`, `preview_uncle_task`) without asking first — it changes nothing. Show the user the preview's description of what will happen, ask them to confirm, and call `confirm_action` with the returned `confirmation_token` only after they say yes. The preview *is* the confirmation prompt: don't ask a separate "are you sure?" before previewing. Never call `confirm_action` straight after its preview unless a standing arrangement (above) covers that action — otherwise wait for the user's yes in between. Handle one action at a time: preview, confirm, and execute it before previewing the next, rather than previewing several and asking once. Tokens are single-use and expire after 5 minutes — if one expires, preview again and re-confirm.
 - **REST:** there's no server-side preview. Before calling the endpoint, stop and ask the user to confirm, stating the details above yourself.
 
 ## Using MCP
